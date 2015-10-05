@@ -1,2 +1,2 @@
 # pyCustusX
-python code to interact with CustusX, [custusx.org](http://custusx.org)
+python code to interact with CustusX data, [custusx.org](http://custusx.org)
