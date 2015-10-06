@@ -985,12 +985,12 @@ if __name__ == '__main__':
 
     
     # print np.linalg.norm(samples2-samples) 
-    file='test.raw'
+    filePath='test.raw'
     samples=np.random.randint(255, size=NoOfSamples)
-    rawWrither = rawFileWrither(file,samples)
+    rawWrither = rawFileWrither(filePath,samples)
 
 
-    rawReader =  rawFileReader(file,NoOfSamples)
+    rawReader =  rawFileReader(filePath,NoOfSamples)
     samples2 = rawReader.get_samples()
 
 
@@ -1081,15 +1081,15 @@ if __name__ == '__main__':
 
 
     try :
-        file = 'temp.raw'
+        filePath = 'temp.raw'
         NoOfSamples=[100,10]
         for k in range(0,5):
 
             samples=np.random.randint(255, size=NoOfSamples)
-            rawWrither = rawFileWrither(file,samples)
+            rawWrither = rawFileWrither(filePath,samples)
 
 
-            rawReader =  rawFileReader(file,NoOfSamples)
+            rawReader =  rawFileReader(filePath,NoOfSamples)
             samples2 = rawReader.get_samples()
 
             assert np.linalg.norm(samples2-samples) == 0
@@ -1100,15 +1100,15 @@ if __name__ == '__main__':
         result=False
 
     try :
-        file = 'temp.zraw'
+        filePath = 'temp.zraw'
         NoOfSamples=[100,10]
         for k in range(0,5):
 
             samples=np.random.randint(255, size=NoOfSamples)
-            rawWrither = rawFileWrither(file,samples)
+            rawWrither = rawFileWrither(filePath,samples)
 
 
-            rawReader =  rawFileReader(file,NoOfSamples)
+            rawReader =  rawFileReader(filePath,NoOfSamples)
             samples2 = rawReader.get_samples()
 
             assert np.linalg.norm(samples2-samples) == 0
@@ -1120,7 +1120,7 @@ if __name__ == '__main__':
 
             
     try :
-        file = 'temp.raw'
+        filePath = 'temp.raw'
         NoOfSamples=[100,10,5]
         for k in range(0,5):
 
@@ -1128,7 +1128,7 @@ if __name__ == '__main__':
             rawWrither = rawFileWrither(file,samples)
 
 
-            rawReader =  rawFileReader(file,NoOfSamples)
+            rawReader =  rawFileReader(filePath,NoOfSamples)
             samples2 = rawReader.get_samples()
 
             assert np.linalg.norm(samples2-samples) == 0
@@ -1139,15 +1139,15 @@ if __name__ == '__main__':
         result=False
 
     try :
-        file = 'temp.zraw'
+        filePath = 'temp.zraw'
         NoOfSamples=[100,10,5]
         for k in range(0,5):
 
             samples=np.random.randint(255, size=NoOfSamples)
-            rawWrither = rawFileWrither(file,samples)
+            rawWrither = rawFileWrither(filePath,samples)
 
 
-            rawReader =  rawFileReader(file,NoOfSamples)
+            rawReader =  rawFileReader(filePath,NoOfSamples)
             samples2 = rawReader.get_samples()
 
             assert np.linalg.norm(samples2-samples) == 0
