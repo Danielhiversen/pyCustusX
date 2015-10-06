@@ -1,5 +1,4 @@
 # Time-stamp: <Last changed 07-11-2014 08:31:52 by Daniel H0yer Iversen, dahoiv>
-from datetime import datetime
 from os import listdir
 from os.path import isfile
 from xml.dom import minidom
@@ -10,7 +9,6 @@ import numpy as np
 import os
 import shutil
 import sys
-import time
 import warnings
 import zlib
 
@@ -819,8 +817,12 @@ class rawFileReader(object):
             dtype='uint8'
         elif ElementType=='MET_SHORT':
             dtype='int16'
+        elif ElementType=='MET_USHORT':
+            dtype='uint16'
         elif ElementType=='MET_FLOAT':
             dtype='float32'
+        else:
+            print "unknown dtype", ElementType
 
         samples = np.fromstring(samples, dtype=dtype)
      
@@ -853,18 +855,22 @@ class rawFileWrither(object):
     def __init__(self, raw_file,samples,color=False,ElementType='MET_UCHAR'):
 
         samples = np.asarray(samples)
-        high_values_indices = samples > 255  # Where values are to high
-        samples[high_values_indices] = 255  
+        #high_values_indices = samples > 255  # Where values are to high
+        #samples[high_values_indices] = 255  
 
-        if np.amax(samples) > 255:
-            warnings.warn('Some values are greater than 255, will be flipped: '+ str(np.amax(samples)))
+        #if np.amax(samples) > 255:
+        #    warnings.warn('Some values are greater than 255, will be flipped: '+ str(np.amax(samples)))
 
         if ElementType=='MET_UCHAR':
             dtype='uint8'
         elif ElementType=='MET_SHORT':
             dtype='int16'
+        elif ElementType=='MET_USHORT':
+            dtype='uint16'
         elif ElementType=='MET_FLOAT':
             dtype='float32'
+        else:
+            print "unknown dtype", ElementType
 
         if color:
             warnings.warn("NOT TESTED" )
