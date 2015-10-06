@@ -5,6 +5,11 @@ Created on Tue Sep 24 17:16:41 2015
 @author: Daniel Hoyer Iversen
 """
 
+
+FOLDER_IN = '/home/dahoiv/disk/data/brainshift/' 
+FOLDER_OUT = '/home/dahoiv/disk/data/brainshift_anoymized' #Should be empty, otherwise it will be deleted
+RM_FILES =('png','mp4') #Will be removed from output folder
+
 import os
 from dateutil import parser
 import datetime, time
@@ -12,61 +17,9 @@ import shutil
 import struct
 from PIL import Image  
 
-FOLDER_IN = '/home/dahoiv/disk/data/brainshift/' #'/home/dahoiv/disk/data/brainshift'
-FOLDER_OUT = '/home/dahoiv/disk/data/brainshift_anoymized'
-
 DATE_FMT = "%Y%m%d"
 DEFAULT_DATE = datetime.datetime.strptime('19700101',DATE_FMT)
-
 TXT_FILES = ('xml','mhd','txt','fts','tts')
-RM_FILES =('png','mp4') #Will be removed from output folder
-
-def readImage(filePathIn):
-    if not filePathIn.endswith(('png')):
-        return None
-
-    try:
-        picture = Image.open(filePathIn)
-    except IOError:
-        return None
-        # filename not an image file
-    return picture
-
-def saveImage(filePathOut, picture):
-    # save picture
-    picture.save(filePathOut)
-
-def anonymizeImage(picture, pixelsX=None, pixelsY=None, color=(0, 0, 0)):
-
-    pixels = picture.load()
-    
-#    import commands
-#    picture.save('temp.bmp')
-#    # Invoking tesseract from python to extract characters
-#    commands.getoutput('tesseract temp.bmp data')
-#    # Reading the output generated in data.txt
-#    with open('data.txt', 'r') as data:
-#        print data.readline().strip()
-# 
-
-    # Get the size of the image
-    width, height = picture.size
-
-    if not pixelsX:
-        pixelsX = range(width)
-
-    if not pixelsY:
-        pixelsY = range(height)
-
-    # Process given pixels
-    for x in pixelsX:
-        if x >= width:
-            continue
-        for y in pixelsY:
-            if y >= height:
-                continue
-            pixels[x, y] = color
-    return picture
 
 def tryConvertToDate(string):
     j=-1
@@ -110,11 +63,87 @@ def getAcqDate(patientFolder):
     print "Could not find acq date"        
     return None
         
+def isCxFolder(folder):
+    if len(folder)<4 or not folder[-4:]=='.cx3':
+        return False
+    if not os.path.exists(os.path.join(folder, 'custusdoc.xml')):
+        return False
+    return True
+         
+def anonymizeString(string,date_fmt='%Y%m%dT%H%M%S',date_fmt2="%Y%m%d"):
 
+    j=0
+    while j+len(date_fmt) < len(string):
+        strDate= string[j:(j+len(date_fmt))]
+        j=j+1
+        try:
+            date= datetime.datetime.strptime(strDate,date_fmt)
+        except ValueError:
+            continue
+        except TypeError:
+            continue
+        if date.year < 2000:
+            continue
+        string=string.replace(date.strftime(date_fmt2),DEFAULT_DATE.strftime(date_fmt2))       
+    return string
+         
+         
+def anonymizeFilePath(fullPath,patientFolder):
+    relPath = os.path.relpath(fullPath,patientFolder)
+    relPath=anonymizeString(relPath)
+    newPath=os.path.join(patientFolder,relPath)
+    os.renames(fullPath,newPath)
+    return newPath
+        
+def readImage(filePathIn):
+    if not filePathIn.endswith(('png')):
+        return None
+
+    try:
+        picture = Image.open(filePathIn)
+    except IOError:
+        return None
+        # filename not an image file
+    return picture
+
+def saveImage(filePathOut, picture):
+    # save picture
+    picture.save(filePathOut)
+
+def anonymizeImage(picture, pixelsX=None, pixelsY=None, color=(0, 0, 0)):
+
+    pixels = picture.load()
+    
+    width, height = picture.size
+
+    if not pixelsX:
+        pixelsX = range(width)
+
+    if not pixelsY:
+        pixelsY = range(height)
+
+    # Process given pixels
+    for x in pixelsX:
+        if x >= width:
+            continue
+        for y in pixelsY:
+            if y >= height:
+                continue
+            pixels[x, y] = color
+    return picture
             
      
 def anonymizeFile(filePath,acqDate,firstTS):
     
+#            picture = readImage(fullPath)
+#            if picture:
+#                anonymizeImage(picture, pixelsX=None, pixelsY=range(0,29), color=(80, 78, 71))
+#                saveImage(fullPath, picture)
+            #modify the file timestamp to current time    
+    
+    if not filePath.endswith(TXT_FILES):
+        return
+
     filedata = None
     with open(filePath, 'r') as file :
             filedata = file.read()
@@ -123,7 +152,6 @@ def anonymizeFile(filePath,acqDate,firstTS):
         with open(filePath, 'r') as file :
             for line in file.readlines():
                 j=-1
-
                 while j+12 < len(line):
                     j=j+1
                     strDate= line[j:(j+13)]
@@ -143,7 +171,7 @@ def anonymizeFile(filePath,acqDate,firstTS):
                     if abs((date-acqDate).days)<2:
                         filedata=filedata.replace(strDate,"{:.0f}".format(floatDate-firstTS))
                     
-    elif filePath.endswith(('xml')):
+    elif filePath.endswith(('custusdoc.xml')):
         with open(filePath, 'r') as file :
             for line in file.readlines():
                 if '<active_patient>' in line:
@@ -168,32 +196,12 @@ def anonymizeFile(filePath,acqDate,firstTS):
                 continue
             if abs((date-acqDate).days)<2:
                 filedata=filedata.replace(strDate,"{:.0f}".format(floatDate-firstTS))
-        
-    j=-1
-    while j+14 < len(filedata):
-        j=j+1
-        strDate= filedata[j:(j+15)]
-        try:
-            date= datetime.datetime.strptime(strDate,'%Y%m%dT%H%M%S')
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-        filedata=filedata.replace(date.strftime("%Y%m%d"),DEFAULT_DATE.strftime("%Y%m%d"))        
-        
-    j=-1
-    while j+9 < len(filedata):
-        j=j+1
-        strDate= filedata[j:(j+10)]
-        try:
-            date= datetime.datetime.strptime(strDate,'%Y-%m-%d')
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-        filedata=filedata.replace(date.strftime('%Y-%m-%d'),DEFAULT_DATE.strftime('%Y-%m-%d'))       
+    
+    filedata=anonymizeString(filedata,date_fmt='%Y%m%dT%H%M%S',date_fmt2="%Y%m%d")
 
-
+    filedata=anonymizeString(filedata,date_fmt='%Y-%m-%d',date_fmt2='%Y-%m-%d')
+    
+   
     with open(filePath, 'w') as file:
         file.write(filedata)    
 
@@ -202,6 +210,8 @@ def anonymizeToolpos(toolPosFile,acqDate):
     fmt='<Q'
     struct_len = struct.calcsize(fmt)
     s = struct.Struct(fmt)
+    
+    #Find first time stamp
     firstTs=None
     j=0
     while j+struct_len < len(mbr):
@@ -240,29 +250,8 @@ def anonymizeToolpos(toolPosFile,acqDate):
     with open(toolPosFile, 'wb') as fileout:
         fileout.write(mbr)  
     return firstTs
-         
-def anonymizeFilePath(fullPath,patientFolder):
-    relPath = os.path.relpath(fullPath,patientFolder)
-    rename = False
-    j=-1
-    while j+14 < len(relPath):
-        j=j+1
-        strDate= relPath[j:(j+15)]
-        try:
-            date= datetime.datetime.strptime(strDate,'%Y%m%dT%H%M%S')
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-        relPath=relPath.replace(date.strftime("%Y%m%d"),DEFAULT_DATE.strftime("%Y%m%d"))
-        rename = True
 
-    if rename:
-        os.renames(fullPath,os.path.join(patientFolder,relPath))
-        return os.path.join(patientFolder,relPath)
-        
-    return fullPath
-               
+              
              
 def anonymizeFolder(patientFolder):
     acqDate=getAcqDate(patientFolder)
@@ -270,35 +259,21 @@ def anonymizeFolder(patientFolder):
         return
     firstTS=anonymizeToolpos(os.path.join(patientFolder,'Logs/toolpositions.snwpos'),acqDate)
     
-    os.utime(patientFolder,None)
     for root, dirs, files in os.walk(patientFolder):
-        os.utime(root,None)
-        
         for f in files:            
             if f.endswith(RM_FILES):
                 os.remove(os.path.join(root,f))
                 continue
 
             fullPath=anonymizeFilePath( os.path.join(root,f),patientFolder)
-            
-            if f.endswith(TXT_FILES):
-                anonymizeFile(fullPath,acqDate,firstTS)
-
-#            picture = readImage(fullPath)
-#            if picture:
-#                anonymizeImage(picture, pixelsX=None, pixelsY=range(0,29), color=(80, 78, 71))
-#                saveImage(fullPath, picture)
-            #modify the file timestamp to current time
+            anonymizeFile(fullPath,acqDate,firstTS)
             os.utime(fullPath,(0,0))
-         
+    for root, dirs, files in os.walk(patientFolder):
+        os.utime(root,(0,0))
+    os.utime(patientFolder,(0,0))         
 
 
-def isCxFolder(folder):
-    if len(folder)<4 or not folder[-4:]=='.cx3':
-        return False
-    if not os.path.exists(os.path.join(folder, 'custusdoc.xml')):
-        return False
-    return True
+
 
 def run():
     if os.path.exists(FOLDER_OUT):
