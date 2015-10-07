@@ -714,6 +714,13 @@ class mhdFile(CxFileHandler):
         rawFile=self.loadRawFile()
         return rawFile.get_samples()
 
+    def get_modality(self):
+        if not self.Params.has_key('Modality'):
+            warnings.warn('No Modality')
+            return
+        else:
+            return self.Params['Modality']   
+        
 
 
 
