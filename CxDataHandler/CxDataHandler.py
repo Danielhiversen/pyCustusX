@@ -628,9 +628,9 @@ class mhdFile(CxFileHandler):
                 j=j+1;
                 temp=line.split()
                 if len(temp)==4:
-                    self.Params['ElementSpacing']=[int(temp[2]),int(temp[3])]
+                    self.Params['ElementSpacing']=[float(temp[2]),float(temp[3])]
                 elif len(temp)==5:
-                    self.Params['ElementSpacing']=[int(temp[2]),int(temp[3]),int(temp[4])]
+                    self.Params['ElementSpacing']=[float(temp[2]),float(temp[3]),float(temp[4])]
                 
             elif line.count('DimSize')==1:
                 j=j+1;
