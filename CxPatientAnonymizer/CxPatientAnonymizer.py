@@ -416,6 +416,8 @@ def anonymizeToolpos(toolPosFile,acqDate):
                 firstTs=min(firstTs,float( time.mktime(date.timetuple())) * 1000)
                 
         j=j+1
+        
+    firstTs=firstTs-float( time.mktime(DEFAULT_DATE.timetuple())) * 1000
     
     j=0
     while j+struct_len < len(mbr):
