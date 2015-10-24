@@ -171,7 +171,6 @@ class Probedata(CxAcqFileHandler):
 
     def read_data(self):
         file_path=self.get_file_path()
-	print file_path
         return minidom.parse(file_path)
 
     def get_clipRect_p(self):
@@ -226,8 +225,6 @@ class UsData(CxAcqFileHandler):
 
     def load_frame(self,frame_no):
         file_path=self.get_file_path()
-        file_path_temp=file_path[0:-5]
-
 
         pd=self.get_probedata()
         clipRect=pd.get_clipRect_p()
@@ -278,7 +275,7 @@ class UsData(CxAcqFileHandler):
 
     def get_tpFile(self):
         if self._tpFile is None:
-            tp_file=tts_file=self.get_file_path().replace('_0.mhd','.tp')
+            tp_file=self.get_file_path().replace('_0.mhd','.tp')
             self._tpFile=tpFile(tp_file)
         return self._tpFile
 
@@ -390,27 +387,28 @@ class CxAcqFolderHandler():
     def __init__(self, folder_path):
         self.folder_path=folder_path
 
-        file=get_filepath_from_data_type(folder_path,'Bandwidth','_0.mhd')
-        if isfile(file):
-            self.Bandwidth= UsData(file)
+        filepath=get_filepath_from_data_type(folder_path,'Bandwidth','_0.mhd')
+        if isfile(filepath):
+            self.Bandwidth= UsData(filepath)
         else:
             self.Bandwidth=None
 
-        file=get_filepath_from_data_type(folder_path,'ScanConverted','_0.mhd')
-        if isfile(file):
-            self.ScanConverted= UsData(file)
+        filepath=get_filepath_from_data_type(folder_path,'ScanConverted','_0.mhd')
+        if isfile(filepath):
+            self.ScanConverted= UsData(filepath)
         else:
             self.ScanConverted=None
 
-        file=get_filepath_from_data_type(folder_path,'Tissue','_0.mhd')
-        if isfile(file):
-            self.Tisue= UsData(file)
+        filepath=get_filepath_from_data_type(folder_path,'Tissue','_0.mhd')
+        print filepath
+        if isfile(filepath):
+            self.Tissue= UsData(filepath)
         else:
             self.Tissue=None
 
-        file=get_filepath_from_data_type(folder_path,'cxOpenCV','_0.mhd')
-        if isfile(file):
-            self.cxOpenCV= UsData(file)
+        filepath=get_filepath_from_data_type(folder_path,'cxOpenCV','_0.mhd')
+        if isfile(filepath):
+            self.cxOpenCV= UsData(filepath)
         else:
             self.cxOpenCV=None
 
@@ -724,9 +722,6 @@ class mhdFile(CxFileHandler):
         else:
             return self.Params['Modality']   
         
-
-
-
     def get_DimSize(self):
         if not self.Params.has_key('DimSize'):
             warnings.warn('No DimSize')
@@ -737,10 +732,27 @@ class mhdFile(CxFileHandler):
                         
     def get_ElementType(self):
         if not self.Params.has_key('ElementType'):
-            warnings.warn('No orientation')
+            warnings.warn('No elementtype')
             return
         else:
             return self.Params['ElementType']
+
+    def get_rMd(self):
+        if not self.Params.has_key('ElementType'):
+            warnings.warn('no matrix')
+            return
+        if not self.Params.has_key('Offset'):
+            warnings.warn('no matrix')
+            return
+            
+        tm=np.array(self.Params['TransformMatrix']).reshape(3,3)
+        om=np.array(self.Params['Offset']).reshape(3,1)
+        rMd=np.hstack((tm,om))
+        rMd=np.vstack((rMd, np.array([0, 0, 0, 1]).reshape(1,4)))
+        return rMd
+        
+            
+        
 
         
     def getFilePath(self):
