@@ -482,11 +482,11 @@ class vtkFileReader(object):
         self.num_patches=-1
 
 
-        self.read_data(vtk_file)
+        self._read_data(vtk_file)
 
 
 
-    def read_data(self,vtk_file):
+    def _read_data(self,vtk_file):
         file = open(vtk_file)
 
         file.readline() # vtk DataFile Version x.x
