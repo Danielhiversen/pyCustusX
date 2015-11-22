@@ -43,11 +43,11 @@ class CxFileHandler(object):
         if not isfile(file_path) and not newFile:
             raise RuntimeError('No file found: %s' % file_path)
         if not newFile:
-            self._data=self.read_data()
+            self._data=self._read_data()
         else:
             self._data=None
 
-    def read_data(self):
+    def _read_data(self):
         raise RuntimeError('Should be implemented in child class')
 
     def get_file_path(self):
@@ -104,7 +104,7 @@ class tpFile(CxAcqFileHandler):
         else:
             self._data= np.vstack((self._data,mat))
 
-    def read_data(self):
+    def _read_data(self):
         file_path=self.get_file_path()
         file = open(file_path)
         mat = np.fromstring(file.read(),sep=' ')
@@ -119,7 +119,8 @@ class tpFile(CxAcqFileHandler):
             mat=self._data.reshape([12/4*len(self._data),4])
             np.savetxt(self.get_file_path(),mat,fmt='%.7f')
 
-
+class fpFile(tpFile):
+    pass
 
 class tsFile(CxAcqFileHandler):
     def get_ts(self):
@@ -130,7 +131,7 @@ class tsFile(CxAcqFileHandler):
             raise RuntimeError('No tts matrix found for nr= %s' % str(nr))
         return self._data[nr]
 
-    def read_data(self):
+    def _read_data(self):
         file_path=self.get_file_path()
         file = open(file_path)
         mat = np.fromstring(file.read(),sep=' ')
@@ -169,7 +170,7 @@ class Probedata(CxAcqFileHandler):
         filepath=CxFileHandler.get_filepath_from_data_type(acq_folder,data_type,'.probedata.xml')
         return CxFileHandler(filepath,False)
 
-    def read_data(self):
+    def _read_data(self):
         file_path=self.get_file_path()
         return minidom.parse(file_path)
 
@@ -293,7 +294,7 @@ class UsData(CxAcqFileHandler):
     def GetDimSize(self,frameNo):
         return self._data[:,:,frameNo].shape
 
-    def read_data(self):
+    def _read_data(self):
         file_path=self.get_file_path()
         file_path_temp=file_path[0:-5]
 
@@ -579,7 +580,7 @@ class mhdFile(CxFileHandler):
         CxFileHandler.__init__(self,mhd_file,newFile)
 
 
-    def read_data(self):
+    def _read_data(self):
         file = open(self._file_path)
         j=0
         self.ElementNumberOfChannels=0
