@@ -111,7 +111,6 @@ class tpFile(CxAcqFileHandler):
         mat = mat.reshape([len(mat)/12,12])
         return mat
 
-
     def save_to_file(self,overwrite=False):
         if not overwrite and isfile(self._file_path) :
             warnings.warn("File already exists, and overwrite=False" )
@@ -120,7 +119,10 @@ class tpFile(CxAcqFileHandler):
             np.savetxt(self.get_file_path(),mat,fmt='%.7f')
 
 class fpFile(tpFile):
-    pass
+    @classmethod
+    def from_acq_folder(CxFileHandler,acq_folder,data_type):
+        filepath=CxFileHandler.get_filepath_from_data_type(acq_folder,data_type,'.fp')
+        return CxFileHandler(filepath,False)
 
 class tsFile(CxAcqFileHandler):
     def get_ts(self):
@@ -131,6 +133,9 @@ class tsFile(CxAcqFileHandler):
             raise RuntimeError('No tts matrix found for nr= %s' % str(nr))
         return self._data[nr]
 
+    def get_no_of_ts(self):
+	return len(self._data)
+
     def _read_data(self):
         file_path=self.get_file_path()
         file = open(file_path)
@@ -138,7 +143,7 @@ class tsFile(CxAcqFileHandler):
         return mat
 
     def add_ts(self,mat):
-        if self._data==None :#or len(self._data)==0:
+        if self._data==None :#or len(self._data)==0:68
             self._data=np.array(mat)
         else:
             self._data= np.hstack((self._data,mat))
