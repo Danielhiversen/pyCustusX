@@ -7,10 +7,10 @@ Created on Tue Sep 24 17:16:41 2015
 
 
 FOLDER_IN = '/home/dahoiv/disk/data/brainshift/' 
-FOLDER_IN ='/home/dahoiv/disk/data/brainshift/new/'
+FOLDER_IN ='/home/dahoiv/disk/data/brainshift/'
 FOLDER_OUT = '/home/dahoiv/disk/data/brainshift_anoymized' #Should be empty, otherwise it will be deleted
 RM_FILES =('png','mp4') #Will be removed from output folder
-RM_FACE_CUT_OFF = 55 #mm to remove of nose. EXperimental, Tries to remove face from MR images
+RM_FACE_CUT_OFF = -1 #mm to remove of nose. EXperimental, Tries to remove face from MR images
 
 import os
 from dateutil import parser
@@ -409,6 +409,7 @@ def anonymizeToolpos(toolPosFile,acqDate):
             pass
         except TypeError:
             pass
+
         if date and abs((date-acqDate).days)<2:
             if not firstTs:
                 firstTs=float( time.mktime(date.timetuple())) * 1000
@@ -416,7 +417,8 @@ def anonymizeToolpos(toolPosFile,acqDate):
                 firstTs=min(firstTs,float( time.mktime(date.timetuple())) * 1000)
                 
         j=j+1
-        
+    if firstTs is None:
+        return 0
     firstTs=firstTs-float( time.mktime(DEFAULT_DATE.timetuple())) * 1000
     
     j=0
