@@ -65,17 +65,16 @@ def convert(nav_acq):
         data = data*0 + 125
         data[idx_n] = 0
         data[idx_p] = 255
-#        rawWrither = CxDataHandler.rawFileWrither(file_org,data,ElementType=ElementType)
         # rawWrither = CxDataHandler.rawFileWrither(file_new,data,ElementType=ElementType)
         print data.shape
   if just_positive:
-      print("just positive values")
+      print("Only positive values")
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
-    nav_acq='/home/dahoiv/disk/data/pasDataAngleCorr/tumor/071_Tumor.cx3/US_Acq/US-Acq_02_19700101T103141'
-    #nav_acq='/home/dahoiv/disk/data/pasDataAngleCorr/tumor/145_2016-10-06_Tumor.cx3/US_Acq/US-Acq_2_20161006T110939'
+    nav_acq='/home/dahoiv/disk/data/brainshift/083_Tumor.cx3/US_Acq/US-Acq_02_19700101T105958'
+    # nav_acq='/home/dahoiv/disk/data/pasDataAngleCorr/tumor/145_2016-10-06_Tumor.cx3/US_Acq/US-Acq_2_20161006T110939'
   else:
-    nav_acq=sys.argv[1]
+    nav_acq = sys.argv[1]
 
   convert(nav_acq)
